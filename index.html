@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P4G Style Ultimate Sequence</title>
+    <style>
+        :root {
+            --p4-yellow: #ffeb00;
+            --p4-dark: #121212;
+            --tv-red: #ff0040;
+            --tv-green: #00ff66;
+            --tv-blue: #00a2ff;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0a0a0a; 
+            overflow: hidden;
+            font-family: "Impact", "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", sans-serif;
+            cursor: pointer;
+        }
+
+        /* 画面上部固定ボタン */
+        .trigger-btn {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 35px;
+            background-color: var(--p4-yellow);
+            color: #000;
+            border: 3px solid #000;
+            font-weight: 900;
+            font-size: 20px;
+            box-shadow: 6px 6px 0 #000;
+            z-index: 999;
+            pointer-events: none;
+            letter-spacing: 2px;
+        }
+
+        /* 全体フェードアウトコンテナ */
+        .main-theater {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            opacity: 1;
+        }
+        .main-theater.fade-out-all {
+            opacity: 0;
+        }
+
+        .wrapper {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* =========================================================
+           アルカナカードラッパー（手前に配置・変更なし）
+        ========================================================= */
+        .arcana-wrapper {
+            position: absolute;
+            width: 260px;
+            height: 360px;
+            z-index: 95; 
+            perspective: 1200px;
+            pointer-events: none;
+            display: none; 
+        }
+
+        .arcana-base-card {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 0 20px rgba(0,0,0,0.9));
+            opacity: 1;
+            transform: translateY(-120vh) rotateX(70deg) rotateY(0deg) rotateZ(-360deg) scale(0.1);
+        }
+
+        /* 降下速度：少し遅めの重厚設定（0.75秒） */
+        .active-arcana .arcana-base-card {
+            animation: arcanaDrop 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes arcanaDrop {
+            0% {
+                transform: translateY(-120vh) rotateX(70deg) rotateY(0deg) rotateZ(-360deg) scale(0.1);
+            }
+            100% {
+                transform: translateY(0) rotateX(0deg) rotateY(0deg) rotateZ(6deg) scale(1.12);
+                filter: drop-shadow(0 0 50px rgba(255,255,255,0.9)) brightness(1.25);
+            }
+        }
+
+        .shatter-piece {
+            position: absolute;
+            width: 260px; height: 360px;
+            background-repeat: no-repeat;
+            background-size: 100% 100%;
+            background-position: center;
+            top: 0; left: 0;
+            z-index: 100;
+            pointer-events: none;
+            filter: brightness(1.7) drop-shadow(0 0 15px rgba(255,255,255,0.95));
+        }
+
+        /* =========================================================
+           復活・超スタイリッシュカットインステージ
+        ========================================================= */
+        .cutin-stage {
+            position: relative;
+            width: 100%;
+            height: 450px; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        /* スタイリッシュ黄黒極太スリット帯 */
+        .cutin-bg {
+            position: absolute;
+            width: 150%;
+            height: 190px; 
+            background: linear-gradient(
+                to bottom,
+                var(--p4-dark) 0%, var(--p4-dark) 5%,
+                var(--p4-yellow) 5%, var(--p4-yellow) 12%,
+                var(--p4-dark) 12%, var(--p4-dark) 88%,
+                var(--p4-yellow) 88%, var(--p4-yellow) 95%,
+                var(--p4-dark) 95%, var(--p4-dark) 100%
+            );
+            transform: skewX(-18deg) scaleY(0);
+            transform-origin: center;
+            box-shadow: 0 0 80px rgba(0,0,0,0.95);
+            opacity: 0;
+            z-index: 1;
+        }
+
+        /* マヨナカテレビ液晶・サイバー空間 */
+        .cutin-eye-space {
+            position: absolute;
+            width: 150%;          
+            height: 144px;         
+            overflow: hidden;      
+            transform: skewX(-18deg);
+            opacity: 0;
+            z-index: 2;
+            background: linear-gradient(90deg, 
+                var(--tv-red) 0%, var(--p4-yellow) 15%, 
+                var(--tv-green) 35%, var(--tv-blue) 55%, 
+                var(--p4-yellow) 75%, var(--tv-red) 100%
+            );
+            background-size: 300% 100%;
+        }
+
+        /* グリッド・TV走査線オーバーレイエフェクト */
+        .cutin-eye-space::before {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(rgba(0,0,0,0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.3) 1px, transparent 1px);
+            background-size: 4px 4px;
+            z-index: 4;
+            opacity: 0.6;
+        }
+
+        .animate-cutin .cutin-eye-space {
+            animation: tvNoiseGlitch 0.15s linear infinite;
+        }
+
+        /* キャラクターコンテナ（超高不透明・コントラスト強化） */
+        .character-container {
+            position: absolute;
+            width: 100%; height: 100%; top: 0; left: 0;
+            transform: skewX(18deg); 
+            display: flex; justify-content: center; align-items: center;
+            z-index: 10; 
+        }
+
+        .character-container img {
+            width: auto; height: 112%; object-fit: contain;  
+            transform: scale(1.08);
+            filter: contrast(1.2) brightness(1.05) drop-shadow(0 0 20px rgba(0,0,0,0.8));
+        }
+
+        /* ─── スタイリッシュ光ストリーム ─── */
+        .speed-lines-container {
+            position: absolute; width: 100%; height: 100%; top: 0; left: 0;
+            z-index: 6; mix-blend-mode: overlay;
+        }
+
+        /* 流れる光の太いレーザーライン */
+        .laser-beam {
+            position: absolute;
+            height: 12px;
+            width: 600px;
+            left: -700px;
+            background: linear-gradient(90deg, transparent, #fff 50%, var(--p4-yellow) 80%, transparent);
+            opacity: 0;
+            filter: blur(1px);
+        }
+        .laser-beam.b1 { top: 20%; }
+        .laser-beam.b2 { top: 75%; background: linear-gradient(90deg, transparent, #fff 30%, var(--tv-red) 70%, transparent); }
+
+        .animate-cutin .laser-beam.b1 { animation: laserPass 0.4s cubic-bezier(0.08, 0.82, 0.17, 1) infinite; }
+        .animate-cutin .laser-beam.b2 { animation: laserPass 0.3s cubic-bezier(0.08, 0.82, 0.17, 1) infinite; animation-delay: 0.15s; }
+
+        /* 通常の極細スピードライン群 */
+        .line { position: absolute; height: 3px; width: 450px; left: -500px; opacity: 0; }
+        .line:nth-child(3n+1) { background: linear-gradient(90deg, transparent, var(--tv-red) 50%, transparent); }
+        .line:nth-child(3n+2) { background: linear-gradient(90deg, transparent, var(--p4-yellow) 60%, transparent); }
+        .line:nth-child(3n+0) { background: linear-gradient(90deg, transparent, #ffffff 50%, transparent); }
+
+        .line:nth-child(1) { top: 10%; height: 1px; }
+        .line:nth-child(2) { top: 30%; height: 4px; width: 550px; }
+        .line:nth-child(3) { top: 45%; height: 2px; } 
+        .line:nth-child(4) { top: 60%; height: 5px; width: 350px; }
+        .line:nth-child(5) { top: 90%; height: 2px; }
+
+        .animate-cutin .line { opacity: 0.9; }
+        .animate-cutin .line:nth-child(1) { animation: rushLine 0.1s linear infinite; }
+        .animate-cutin .line:nth-child(2) { animation: rushLine 0.14s linear infinite; }
+        .animate-cutin .line:nth-child(3) { animation: rushLine 0.08s linear infinite; }
+        .animate-cutin .line:nth-child(4) { animation: rushLine 0.12s linear infinite; }
+        .animate-cutin .line:nth-child(5) { animation: rushLine 0.07s linear infinite; }
+
+        /* フラッシュ通過ライン（手前を鋭く斬る光） */
+        .flash-line {
+            position: absolute; width: 250%; height: 100%;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0) 30%, rgba(255,255,255,1) 50%, rgba(255,255,255,0) 70%, transparent 100%);
+            transform: translateX(-100%) skewX(-18deg); z-index: 15;
+        }
+
+        /* 飛び出す大迫力の「カッ」フォント */
+        .cutin-text {
+            position: absolute; right: 14%; top: -85px; font-size: 160px; font-weight: 900; font-style: italic; color: #fff;
+            text-shadow: 
+                -5px -5px 0 var(--p4-dark), 5px -5px 0 var(--p4-dark), -5px 5px 0 var(--p4-dark), 5px 5px 0 var(--p4-dark), 
+                10px 10px 0 var(--p4-yellow), 16px 16px 0 var(--p4-dark);
+            letter-spacing: -5px; user-select: none; opacity: 0; transform: scale(0) rotate(15deg); z-index: 25;
+        }
+
+        /* ─── 連動クラス用アニメーション ─── */
+        .animate-cutin .cutin-bg { animation: openSlit 0.22s cubic-bezier(0.19, 1, 0.22, 1) forwards; }
+        .animate-cutin .cutin-eye-space { opacity: 1; transition: opacity 0.1s; }
+        .animate-cutin .flash-line { animation: flashPass 0.38s ease-out forwards; animation-delay: 0.04s; }
+        .animate-cutin .cutin-text { animation: textPop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.4) forwards; animation-delay: 0.08s; }
+
+        /* 全体フラッシュ */
+        .screen-flash {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #fff; opacity: 0; pointer-events: none; z-index: 999;
+        }
+        .screen-flash.run { animation: screenFlashAnim 0.38s ease-out forwards; }
+
+        /* キーフレーム */
+        @keyframes openSlit {
+            0% { transform: skewX(-18deg) scaleY(0); opacity: 0; }
+            15% { opacity: 1; }
+            80% { transform: skewX(-18deg) scaleY(1.15); }
+            100% { transform: skewX(-18deg) scaleY(1); opacity: 1; }
+        }
+        @keyframes flashPass {
+            0% { transform: translateX(-100%) skewX(-18deg); }
+            100% { transform: translateX(100%) skewX(-18deg); }
+        }
+        @keyframes laserPass {
+            0% { left: -100%; opacity: 0; }
+            15% { opacity: 1; }
+            85% { opacity: 1; }
+            100% { left: 130%; opacity: 0; }
+        }
+        @keyframes rushLine {
+            0% { left: -100%; }
+            100% { left: 150%; }
+        }
+        @keyframes tvNoiseGlitch {
+            0% { background-position: 0px 0; filter: saturate(1.1) contrast(1.1); }
+            25% { background-position: -40px 0; filter: hue-rotate(-10deg) saturate(1.5); }
+            50% { background-position: 15px 0; }
+            75% { background-position: -15px 0; filter: hue-rotate(15deg) contrast(1.3); }
+            100% { background-position: 0px 0; filter: saturate(1.1) contrast(1.1); }
+        }
+        @keyframes textPop {
+            0% { opacity: 0; transform: scale(0) rotate(25deg) translate(40px, 40px); }
+            75% { opacity: 1; transform: scale(1.3) rotate(-6deg); }
+            100% { opacity: 1; transform: scale(1) rotate(-4deg); }
+        }
+        @keyframes screenFlashAnim {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+    </style>
+</head>
+<body onclick="startBattleSequence()">
+
+    <button class="trigger-btn">ペルソナ召喚</button>
+
+    <div class="main-theater" id="mainTheater">
+        <div class="wrapper">
+            
+            <div class="arcana-wrapper" id="arcanaWrapper">
+                <img id="arcanaBaseCard" class="arcana-base-card" src="" alt="Arcana Card">
+            </div>
+
+            <div class="cutin-stage" id="cutinStage">
+                <div class="cutin-bg"></div>
+                
+                <div class="cutin-eye-space">
+                    <div class="speed-lines-container">
+                        <div class="laser-beam b1"></div>
+                        <div class="laser-beam b2"></div>
+                        
+                        <div class="line"></div><div class="line"></div><div class="line"></div>
+                        <div class="line"></div><div class="line"></div>
+                    </div>
+                    <div class="character-container">
+                        <img id="cutinImage" src="" alt="Character Front">
+                    </div>
+                </div>
+
+                <div class="flash-line"></div>
+                <div class="cutin-text">カッ</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="screen-flash" id="screenFlash"></div>
+
+    <script>
+        // =========================================================
+        //  【設定エリア】使いたい画像＆サウンドのファイル名
+        // =========================================================
+        const ARCANA_CARD_FILE_NAME = "IMG_0730.jpeg"; 
+        const CHARACTER_CUTIN_FILE_NAME = "unnamed-transparent.png"; 
+        
+        const SOUND_CUTIN = "cutin.mp3";    
+        const SOUND_SHATTER = "shatter.mp3"; 
+        // =========================================================
+
+        const theater = document.getElementById('mainTheater');
+        const wrapper = document.getElementById('arcanaWrapper');
+        const baseCard = document.getElementById('arcanaBaseCard');
+        const stage = document.getElementById('cutinStage');
+        const flash = document.getElementById('screenFlash');
+
+        baseCard.src = ARCANA_CARD_FILE_NAME;
+        document.getElementById('cutinImage').src = CHARACTER_CUTIN_FILE_NAME;
+
+        const audioCutin = new Audio(SOUND_CUTIN);
+        const audioShatter = new Audio(SOUND_SHATTER);
+
+        let isPlaying = false;
+
+        function startBattleSequence() {
+            if (isPlaying) return; 
+            isPlaying = true;
+
+            // クリーンリセット
+            const oldPieces = wrapper.querySelectorAll('.shatter-piece');
+            oldPieces.forEach(p => p.remove());
+            
+            theater.classList.remove('fade-out-all');
+            wrapper.classList.remove('active-arcana');
+            stage.classList.remove('animate-cutin');
+            flash.classList.remove('run');
+            
+            wrapper.style.display = 'none';
+            baseCard.style.display = 'block';
+            baseCard.style.opacity = '1';
+            
+            audioCutin.currentTime = 0;
+            audioShatter.currentTime = 0;
+            
+            void theater.offsetWidth;
+            void wrapper.offsetWidth;
+            void stage.offsetWidth;
+            void flash.offsetWidth;
+            
+            // ─── 段階 1: 光が駆け巡る極上カットイン発動 ───
+            stage.classList.add('animate-cutin');
+            audioCutin.play().catch(e => console.log("Audio play prevented:", e));
+            
+            // ─── 段階 2: カード出現（少し遅らせてじっくり降下） ───
+            setTimeout(() => {
+                wrapper.style.display = 'block';
+                wrapper.classList.add('active-arcana');
+            }, 400); 
+
+            // ─── 段階 3: 0.75秒かけて中央到達後に完全爆散 ───
+            setTimeout(() => {
+                baseCard.style.display = 'none'; 
+                baseCard.style.opacity = '0';
+                
+                flash.classList.add('run'); 
+                audioShatter.play().catch(e => console.log("Audio play prevented:", e));
+
+                // 4x4のハイクオリティ多角形破片生成
+                const cols = 4;
+                const rows = 4;
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        const piece = document.createElement('div');
+                        piece.className = 'shatter-piece';
+                        piece.style.backgroundImage = `url(${ARCANA_CARD_FILE_NAME})`;
+                        
+                        const x1 = (c / cols) * 100;
+                        const y1 = (r / rows) * 100;
+                        const x2 = ((c + 1) / cols) * 100;
+                        const y2 = ((r + 1) / rows) * 100;
+                        
+                        const j1 = (Math.random() - 0.5) * 6;
+                        const j2 = (Math.random() - 0.5) * 6;
+                        
+                        piece.style.clipPath = `polygon(${x1}% ${y1}%, ${x2 + j1}% ${y1}%, ${x2}% ${y2 + j2}%, ${x1}% ${y2}%)`;
+                        wrapper.appendChild(piece);
+                        
+                        const forceX = (c - (cols / 2 - 0.5)) * 260 + (Math.random() - 0.5) * 220;
+                        const forceY = (r - (rows / 2 - 0.5)) * 260 + (Math.random() - 0.5) * 220;
+                        const rot = (Math.random() - 0.5) * 950;
+                        
+                        piece.animate([
+                            { transform: 'translate(0, 0) rotate(0deg) scale(1)', opacity: 1 },
+                            { transform: `translate(${forceX}px, ${forceY}px) rotate(${rot}deg) scale(0)`, opacity: 0 }
+                        ], {
+                            duration: 500,
+                            easing: 'cubic-bezier(0.1, 0.8, 0.3, 1)',
+                            fill: 'forwards'
+                        });
+                    }
+                }
+                
+                // ─── 段階 4: 余韻のあとに全体を美しくフェードアウト ───
+                setTimeout(() => {
+                    theater.classList.add('fade-out-all');
+                    
+                    setTimeout(() => {
+                        isPlaying = false;
+                    }, 600); 
+                }, 900); // じっくりと爆散の余韻を味わうための時間
+
+            }, 400 + 750); 
+        }
+    </script>
+</body>
+</html>
